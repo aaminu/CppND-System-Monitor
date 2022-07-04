@@ -3,6 +3,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <filesystem>
+#include <iostream>
 
 #include "linux_parser.h"
 
@@ -10,6 +12,7 @@ using std::stof;
 using std::string;
 using std::to_string;
 using std::vector;
+namespace fs = std::filesystem;
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
@@ -50,25 +53,65 @@ string LinuxParser::Kernel() {
 // BONUS: Update this to use std::filesystem
 vector<int> LinuxParser::Pids() {
   vector<int> pids;
-  DIR* directory = opendir(kProcDirectory.c_str());
-  struct dirent* file;
-  while ((file = readdir(directory)) != nullptr) {
-    // Is this a directory?
-    if (file->d_type == DT_DIR) {
-      // Is every character of the name a digit?
-      string filename(file->d_name);
-      if (std::all_of(filename.begin(), filename.end(), isdigit)) {
-        int pid = stoi(filename);
+  fs::path directory{kProcDirectory};
+  for(auto const &dir_entry : fs::directory_iterator{directory}){
+    if (dir_entry.is_directory()){
+      string dir_entry_str{dir_entry.path().string()};
+      
+      auto pos = dir_entry_str.rfind('/');
+      if (pos != string::npos){
+        ++ pos;
+        dir_entry_str = dir_entry_str.substr(pos); 
+      }
+      if(std::all_of(dir_entry_str.begin(), dir_entry_str.end(), isdigit)){
+        int pid = stoi(dir_entry_str);
         pids.push_back(pid);
       }
     }
   }
-  closedir(directory);
+  // DIR* directory = opendir(kProcDirectory.c_str());
+  // struct dirent* file;
+  // while ((file = readdir(directory)) != nullptr) {
+  //   // Is this a directory?
+  //   if (file->d_type == DT_DIR) {
+  //     // Is every character of the name a digit?
+  //     string filename(file->d_name);
+  //     if (std::all_of(filename.begin(), filename.end(), isdigit)) {
+  //       int pid = stoi(filename);
+  //       pids.push_back(pid);
+  //     }
+  //   }
+  // }
+  // closedir(directory);
   return pids;
 }
 
 // TODO: Read and return the system memory utilization
-float LinuxParser::MemoryUtilization() { return 0.0; }
+float LinuxParser::MemoryUtilization() { 
+  string memType, memTotal{"MemTotal:"}, memFree{"MemFree:"};
+  float memValue, memTotalValue{0.0}, memFreeValue{0.0};
+  string line;
+  int count = 0;
+  std::ifstream stream(kProcDirectory + kMeminfoFilename);
+  if (stream.is_open()){
+    while(std::getline(stream, line)){
+      std::istringstream linestream(line);
+      linestream >> memType >>  memValue;
+      if (memType == memTotal){
+        memTotalValue = memValue;
+        count++;
+      }else if (memType == memFree)
+      {
+        memFreeValue = memValue;
+        count++;
+      }
+
+      if (count == 2) break;
+    }
+  }
+
+  return ((memTotalValue - memFreeValue)/memTotalValue);
+  }
 
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { return 0; }
