@@ -84,6 +84,7 @@ vector<int> LinuxParser::Pids() {
   // }
   // closedir(directory);
   return pids;
+
 }
 
 // TODO: Read and return the system memory utilization
@@ -114,7 +115,19 @@ float LinuxParser::MemoryUtilization() {
   }
 
 // TODO: Read and return the system uptime
-long LinuxParser::UpTime() { return 0; }
+long LinuxParser::UpTime() { 
+  long activeUptime, idleUptime, totalUptime{0};
+  string line;
+  std::ifstream stream(kProcDirectory + kUptimeFilename);
+  if (stream.is_open()){
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    linestream >> activeUptime >> idleUptime;
+    totalUptime = activeUptime + idleUptime;
+  }
+
+  return totalUptime;
+ }
 
 // TODO: Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() { return 0; }
@@ -133,10 +146,38 @@ long LinuxParser::IdleJiffies() { return 0; }
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 // TODO: Read and return the total number of processes
-int LinuxParser::TotalProcesses() { return 0; }
+int LinuxParser::TotalProcesses() { 
+  string strParser, line; 
+  int intParser, totalProcesses{0};
+  std::ifstream stream(kProcDirectory + kStatFilename);
+  if (stream.is_open()){
+    while(std::getline(stream, line)){
+      std::istringstream linestream(line);
+      linestream >> strParser >>  intParser;
+      if (strParser == "processes"){
+        totalProcesses = intParser;
+      }
+    }
+  }
+  return totalProcesses; 
+}
 
 // TODO: Read and return the number of running processes
-int LinuxParser::RunningProcesses() { return 0; }
+int LinuxParser::RunningProcesses() { 
+  string strParser, line; 
+  int intParser, runningProcesses{0};
+  std::ifstream stream(kProcDirectory + kStatFilename);
+  if (stream.is_open()){
+    while(std::getline(stream, line)){
+      std::istringstream linestream(line);
+      linestream >> strParser >>  intParser;
+      if (strParser == "procs_running"){
+        runningProcesses = intParser;
+      }
+    }
+  }
+  return runningProcesses; 
+}
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
