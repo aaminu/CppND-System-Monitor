@@ -18,7 +18,23 @@ using std::vector;
 You need to properly format the uptime. Refer to the comments mentioned in format. cpp for formatting the uptime.*/
 
 // TODO: Return the system's CPU
-Processor& System::Cpu() { return cpu_; }
+Processor& System::Cpu() { 
+    
+    vector<string> cpuValues = LinuxParser::CpuUtilization(); 
+    float total = 0.0;
+    float idle = 0.0;
+    
+    for(auto &item : cpuValues)
+        total += std::stof(item);
+    
+    
+    idle += std::stof(cpuValues[LinuxParser::CPUStates::kIdle_]);
+    idle += std::stof(cpuValues[LinuxParser::CPUStates::kIOwait_]);
+    cpu_.setValues(total, idle);
+
+    return cpu_;
+    
+    }
 
 // TODO: Return a container composed of the system's processes
 vector<Process>& System::Processes() { return processes_; }
@@ -41,16 +57,10 @@ std::string System::OperatingSystem() {
 } 
 
 // TODO: Return the number of processes actively running on the system
-int System::RunningProcesses() { 
-    return LinuxParser::RunningProcesses(); 
-}
+int System::RunningProcesses() { return LinuxParser::RunningProcesses(); }
 
 // TODO: Return the total number of processes on the system
-int System::TotalProcesses() { 
-    return LinuxParser::TotalProcesses(); 
-}
+int System::TotalProcesses() { return LinuxParser::TotalProcesses(); }
 
 // TODO: Return the number of seconds since the system started running
-long int System::UpTime() { 
-    return LinuxParser::UpTime();
-}
+long int System::UpTime() { return LinuxParser::UpTime(); }
