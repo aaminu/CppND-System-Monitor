@@ -116,17 +116,16 @@ float LinuxParser::MemoryUtilization() {
 
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { 
-  long activeUptime, idleUptime, totalUptime{0};
+  long activeUptime, idleUptime;
   string line;
   std::ifstream stream(kProcDirectory + kUptimeFilename);
   if (stream.is_open()){
     std::getline(stream, line);
     std::istringstream linestream(line);
     linestream >> activeUptime >> idleUptime;
-    totalUptime = activeUptime + idleUptime;
   }
 
-  return totalUptime;
+  return activeUptime;
  }
 
 // TODO: Read and return the number of jiffies for the system
@@ -303,7 +302,7 @@ string LinuxParser::User(int pid) {
   std::ifstream stream(kPasswordPath);
   if (stream.is_open()){
     while(std::getline(stream, line)){
-      std::regex_match(line, m, regexp);
+      std::regex_search(line, m, regexp);
       if(!m.empty()){
         user = m.str().substr(0, m.str().size() - subPattern.size());
         break;
@@ -317,5 +316,6 @@ string LinuxParser::User(int pid) {
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid) {
   vector<string> jiffies = CpuUtilization(pid);
+  
   return std::stol(jiffies[ProcessStates::kUpTime_]); 
   }
