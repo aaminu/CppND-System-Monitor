@@ -21,15 +21,8 @@ You need to properly format the uptime. Refer to the comments mentioned in forma
 Processor& System::Cpu() { 
     
     vector<string> cpuValues = LinuxParser::CpuUtilization(); 
-    float total = 0.0;
-    float idle = 0.0;
-    
-    for(auto &item : cpuValues)
-        total += std::stof(item);
-    
-    
-    idle += std::stof(cpuValues[LinuxParser::CPUStates::kIdle_]);
-    idle += std::stof(cpuValues[LinuxParser::CPUStates::kIOwait_]);
+    float total = (float) LinuxParser::Jiffies();
+    float idle = (float) LinuxParser::IdleJiffies();
     cpu_.setValues(total, idle);
 
     return cpu_;
