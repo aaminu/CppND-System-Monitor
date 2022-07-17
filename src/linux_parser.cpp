@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-#include <iostream>
 
 #include "linux_parser.h"
 
@@ -185,7 +184,7 @@ vector<string> LinuxParser::CpuUtilization() {
 vector<string> LinuxParser::CpuUtilization(int pid) { 
   vector<string> cpuValues;
   string line, value;
-  std::ifstream stream(kProcDirectory + "/" + to_string(pid) + kStatFilename);
+  std::ifstream stream(kProcDirectory + to_string(pid) + kStatFilename);
   if (stream.is_open()){
     std::getline(stream, line);
     std::istringstream linestream(line);
@@ -241,7 +240,7 @@ int LinuxParser::RunningProcesses() {
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command(int pid) { 
   string line;
-  std::ifstream stream(kProcDirectory + "/" + to_string(pid) + kCmdlineFilename);
+  std::ifstream stream(kProcDirectory + to_string(pid) + kCmdlineFilename);
   if (stream.is_open()){
     std::getline(stream, line);
   }
@@ -254,7 +253,7 @@ string LinuxParser::Ram(int pid) {
   string strParser, value, line;
   string ramMB{""};
   
-  std::ifstream stream(kProcDirectory + "/" + to_string(pid) + kStatusFilename);
+  std::ifstream stream(kProcDirectory + to_string(pid) + kStatusFilename);
   if (stream.is_open()){
     while(std::getline(stream, line)){
       std::istringstream linestream(line);
@@ -275,7 +274,7 @@ string LinuxParser::Uid(int pid) {
   string strParser, value, line;
   string uid{""};
   
-  std::ifstream stream(kProcDirectory + "/" + to_string(pid) + kStatusFilename);
+  std::ifstream stream(kProcDirectory + to_string(pid) + kStatusFilename);
   if (stream.is_open()){
     while(std::getline(stream, line)){
       std::istringstream linestream(line);
@@ -316,6 +315,6 @@ string LinuxParser::User(int pid) {
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid) {
   vector<string> jiffies = CpuUtilization(pid);
-  
+
   return std::stol(jiffies[ProcessStates::kUpTime_]); 
   }
